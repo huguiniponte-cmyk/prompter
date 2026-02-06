@@ -237,6 +237,34 @@ fun MainScreen(
             }
 
             composable(
+                route = Screen.ThemeDetail.route,
+                arguments = listOf(navArgument("themeId") { type = NavType.StringType })
+            ) { backStackEntry ->
+                val themeId = backStackEntry.arguments?.getString("themeId") ?: return@composable
+                ThemeDetailScreen(
+                    themeId = themeId,
+                    themeViewModel = themeViewModel,
+                    promptViewModel = promptViewModel,
+                    onPromptClick = { promptId ->
+                        navController.navigate(Screen.PromptUse.createRoute(promptId))
+                    },
+                    onNavigateBack = { navController.navigateUp() }
+                )
+            }
+
+            composable(
+                route = Screen.OutputDetail.route,
+                arguments = listOf(navArgument("outputId") { type = NavType.StringType })
+            ) { backStackEntry ->
+                val outputId = backStackEntry.arguments?.getString("outputId") ?: return@composable
+                OutputDetailScreen(
+                    outputId = outputId,
+                    outputViewModel = outputViewModel,
+                    onNavigateBack = { navController.navigateUp() }
+                )
+            }
+
+            composable(
                 route = Screen.PromptUse.route,
                 arguments = listOf(navArgument("promptId") { type = NavType.StringType })
             ) { backStackEntry ->
