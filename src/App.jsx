@@ -106,15 +106,15 @@ function App() {
     );
 
     return (
-        <div className="flex h-screen bg-background overflow-hidden p-4 gap-4">
+        <div className="flex flex-col md:flex-row h-screen bg-background overflow-hidden p-2 md:p-4 gap-2 md:gap-4">
             {/* Background Gradients */}
-            <div className="fixed inset-0 z-0 pointer-events-none opacity-20">
-                <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-primary/30 rounded-full blur-[120px]" />
-                <div className="absolute bottom-0 left-0 w-[500px] h-[500px] bg-accent/20 rounded-full blur-[120px]" />
+            <div className="fixed inset-0 z-0 pointer-events-none opacity-10 md:opacity-20">
+                <div className="absolute top-0 right-0 w-[300px] md:w-[500px] h-[300px] md:h-[500px] bg-primary/30 rounded-full blur-[80px] md:blur-[120px]" />
+                <div className="absolute bottom-0 left-0 w-[300px] md:w-[500px] h-[300px] md:h-[500px] bg-accent/20 rounded-full blur-[80px] md:blur-[120px]" />
             </div>
 
-            {/* Sidebar */}
-            <aside className="w-64 glass rounded-3xl flex flex-col p-6 z-10">
+            {/* Sidebar (Desktop) */}
+            <aside className="hidden md:flex w-64 glass rounded-3xl flex-col p-6 z-10">
                 <div className="flex items-center gap-3 mb-10 px-2">
                     <div className="p-2 bg-primary rounded-xl">
                         <AppWindow className="text-white" size={24} />
@@ -133,8 +133,9 @@ function App() {
             </aside>
 
             {/* Main Content Area */}
-            <main className="flex-1 glass rounded-3xl overflow-hidden relative z-10 flex flex-col">
+            <main className="flex-1 glass rounded-[24px] md:rounded-3xl overflow-hidden relative z-10 flex flex-col">
                 <AnimatePresence mode="wait">
+                    {/* ... (keep existing views) ... */}
                     {activeTab === 'themes' && (
                         <ThemesView
                             key="themes"
@@ -182,16 +183,37 @@ function App() {
                         />
                     )}
                     {activeTab === 'settings' && (
-                        <div key="settings" className="p-10">
+                        <div key="settings" className="p-6 md:p-10">
                             <h2 className="text-3xl font-bold mb-6">Definições</h2>
                             <p className="text-slate-400">Em breve mais opções...</p>
                         </div>
                     )}
                 </AnimatePresence>
             </main>
+
+            {/* Mobile Navigation */}
+            <div className="md:hidden glass rounded-2xl p-2 flex justify-around items-center z-50">
+                <MobileTabItem id="themes" icon={LayoutGrid} activeTab={activeTab} setActiveTab={setActiveTab} />
+                <MobileTabItem id="prompts" icon={FileText} activeTab={activeTab} setActiveTab={setActiveTab} />
+                <MobileTabItem id="history" icon={HistoryIcon} activeTab={activeTab} setActiveTab={setActiveTab} />
+                <MobileTabItem id="settings" icon={Settings} activeTab={activeTab} setActiveTab={setActiveTab} />
+            </div>
         </div>
     );
 }
+
+// Mobile Tab Item Helper
+const MobileTabItem = ({ id, icon: Icon, activeTab, setActiveTab }) => (
+    <button
+        onClick={() => setActiveTab(id)}
+        className={cn(
+            "p-3 rounded-xl transition-all",
+            activeTab === id ? "bg-primary text-white" : "text-slate-500"
+        )}
+    >
+        <Icon size={24} />
+    </button>
+);
 
 // --- Views & Components ---
 
@@ -204,16 +226,16 @@ function ThemesView({ themes, onAddTheme, onSelectTheme, onDelete }) {
             initial={{ opacity: 0, x: 20 }}
             animate={{ opacity: 1, x: 0 }}
             exit={{ opacity: 0, x: -20 }}
-            className="p-8 h-full flex flex-col"
+            className="p-6 md:p-8 h-full flex flex-col"
         >
-            <header className="flex justify-between items-center mb-8">
+            <header className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-8">
                 <div>
-                    <h2 className="text-4xl font-extrabold text-white">Temas</h2>
-                    <p className="text-slate-400 mt-1">Organize os seus prompts por categorias</p>
+                    <h2 className="text-3xl md:text-4xl font-extrabold text-white">Temas</h2>
+                    <p className="text-slate-400 mt-1 text-sm md:text-base">Organize os seus prompts por categorias</p>
                 </div>
                 <button
                     onClick={() => setIsAdding(true)}
-                    className="flex items-center gap-2 bg-primary hover:bg-primary/90 text-white px-5 py-3 rounded-2xl transition-all shadow-lg shadow-primary/20"
+                    className="flex items-center gap-2 bg-primary hover:bg-primary/90 text-white px-5 py-3 rounded-2xl transition-all shadow-lg shadow-primary/20 w-full sm:w-auto justify-center"
                 >
                     <Plus size={20} />
                     <span className="font-bold">Novo Tema</span>
@@ -338,27 +360,27 @@ function PromptsView({ prompts, themes, onAddPrompt, onToggleFavorite, onSelectP
             initial={{ opacity: 0, x: 20 }}
             animate={{ opacity: 1, x: 0 }}
             exit={{ opacity: 0, x: -20 }}
-            className="p-8 h-full flex flex-col"
+            className="p-6 md:p-8 h-full flex flex-col"
         >
-            <header className="flex justify-between items-start mb-8">
+            <header className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-6 mb-8">
                 <div>
-                    <h2 className="text-4xl font-extrabold text-white">Prompts</h2>
-                    <p className="text-slate-400 mt-1">Todos os seus templates salvos</p>
+                    <h2 className="text-3xl md:text-4xl font-extrabold text-white">Prompts</h2>
+                    <p className="text-slate-400 mt-1 text-sm md:text-base">Todos os seus templates salvos</p>
                 </div>
-                <div className="flex items-center gap-4">
-                    <div className="relative group">
+                <div className="flex flex-col sm:flex-row items-center gap-3 w-full lg:w-auto">
+                    <div className="relative group w-full sm:w-64">
                         <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-500 group-focus-within:text-primary transition-all" size={18} />
                         <input
                             type="text"
-                            placeholder="Pesquisar prompt..."
+                            placeholder="Pesquisar..."
                             value={searchTerm}
                             onChange={(e) => setSearchTerm(e.target.value)}
-                            className="bg-slate-800/50 border border-white/5 rounded-2xl pl-12 pr-6 py-3 outline-none focus:border-primary/50 focus:bg-slate-800/80 transition-all w-64 text-sm font-medium"
+                            className="bg-slate-800/50 border border-white/5 rounded-2xl pl-12 pr-6 py-3 outline-none focus:border-primary/50 focus:bg-slate-800/80 transition-all w-full text-sm font-medium"
                         />
                     </div>
                     <button
                         onClick={() => setIsAdding(true)}
-                        className="flex items-center gap-2 bg-primary hover:bg-primary/90 text-white px-5 py-3 rounded-2xl transition-all shadow-lg shadow-primary/20"
+                        className="flex items-center gap-2 bg-primary hover:bg-primary/90 text-white px-5 py-3 rounded-2xl transition-all shadow-lg shadow-primary/20 w-full sm:w-auto justify-center"
                     >
                         <Plus size={20} />
                         <span className="font-bold whitespace-nowrap">Novo Prompt</span>
@@ -448,9 +470,9 @@ function UsePromptView({ prompt, onBack, onSaveOutput }) {
         <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
-            className="p-10 h-full flex flex-col items-center"
+            className="p-6 md:p-10 h-full flex flex-col items-center overflow-y-auto scroll-hide"
         >
-            <div className="w-full max-w-3xl flex flex-col h-full">
+            <div className="w-full max-w-3xl flex flex-col">
                 <button onClick={onBack} className="flex items-center gap-2 text-slate-400 hover:text-white mb-8 transition-all w-fit">
                     <ArrowLeft size={20} />
                     <span className="font-bold">Voltar</span>
@@ -515,21 +537,21 @@ function HistoryView({ outputs, onDelete, onUpdateOutput }) {
         <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
-            className="p-10 h-full flex flex-col"
+            className="p-6 md:p-10 h-full flex flex-col"
         >
-            <header className="flex justify-between items-start mb-10">
+            <header className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-6 mb-10">
                 <div>
-                    <h2 className="text-4xl font-extrabold text-white mb-2">Histórico</h2>
-                    <p className="text-slate-400">Pode guardar os resultados da IA em cada prompt usado</p>
+                    <h2 className="text-3xl md:text-4xl font-extrabold text-white mb-2">Histórico</h2>
+                    <p className="text-slate-400 text-sm md:text-base">Pode guardar os resultados da IA em cada prompt usado</p>
                 </div>
-                <div className="relative group">
+                <div className="relative group w-full lg:w-72">
                     <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-500 group-focus-within:text-primary transition-all" size={18} />
                     <input
                         type="text"
-                        placeholder="Pesquisar histórico..."
+                        placeholder="Pesquisar..."
                         value={searchTerm}
                         onChange={(e) => setSearchTerm(e.target.value)}
-                        className="bg-slate-800/50 border border-white/5 rounded-2xl pl-12 pr-6 py-3 outline-none focus:border-primary/50 focus:bg-slate-800/80 transition-all w-72 text-sm font-medium"
+                        className="bg-slate-800/50 border border-white/5 rounded-2xl pl-12 pr-6 py-3 outline-none focus:border-primary/50 focus:bg-slate-800/80 transition-all w-full text-sm font-medium"
                     />
                 </div>
             </header>
@@ -610,33 +632,33 @@ function ThemeDetailView({ theme, prompts, onBack, onSelectPrompt, onAddPrompt }
         <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
-            className="p-10 h-full flex flex-col"
+            className="p-6 md:p-10 h-full flex flex-col"
         >
             <button onClick={onBack} className="flex items-center gap-2 text-slate-400 hover:text-white mb-8 transition-all w-fit">
                 <ArrowLeft size={20} />
                 <span className="font-bold">Todos os Temas</span>
             </button>
 
-            <div className="flex justify-between items-start mb-10">
+            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-6 mb-10">
                 <div className="flex items-center gap-4">
                     <div
-                        className="w-16 h-16 rounded-3xl flex items-center justify-center text-4xl shadow-inner border border-white/5"
+                        className="w-14 h-14 md:w-16 md:h-16 rounded-[20px] md:rounded-3xl flex items-center justify-center text-3xl md:text-4xl shadow-inner border border-white/5"
                         style={{ backgroundColor: theme?.color + '20', color: theme?.color }}
                     >
                         {theme?.icon}
                     </div>
                     <div>
-                        <h2 className="text-4xl font-extrabold text-white">{theme?.name}</h2>
-                        <p className="text-slate-400">{prompts.length} prompts salvos</p>
+                        <h2 className="text-2xl md:text-4xl font-extrabold text-white">{theme?.name}</h2>
+                        <p className="text-slate-400 text-sm md:text-base">{prompts.length} prompts salvos</p>
                     </div>
                 </div>
 
                 <button
                     onClick={() => setIsAdding(true)}
-                    className="flex items-center gap-2 bg-primary/20 hover:bg-primary/30 text-primary border border-primary/20 px-5 py-3 rounded-2xl transition-all"
+                    className="flex items-center gap-2 bg-primary/20 hover:bg-primary/30 text-primary border border-primary/20 px-5 py-3 rounded-2xl transition-all w-full sm:w-auto justify-center"
                 >
                     <Plus size={20} />
-                    <span className="font-bold whitespace-nowrap">Novo Prompt neste Tema</span>
+                    <span className="font-bold whitespace-nowrap">Novo Prompt</span>
                 </button>
             </div>
 
