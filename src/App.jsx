@@ -151,6 +151,7 @@ function App() {
                             prompts={data.prompts.filter(p => p.themeId === selectedThemeId)}
                             onBack={() => setActiveTab('themes')}
                             onSelectPrompt={(id) => { setSelectedPromptId(id); setActiveTab('use-prompt'); }}
+                            onAddPrompt={addPrompt}
                         />
                     )}
                     {activeTab === 'prompts' && (
@@ -326,7 +327,6 @@ function ThemesView({ themes, onAddTheme, onSelectTheme, onDelete }) {
 function PromptsView({ prompts, themes, onAddPrompt, onToggleFavorite, onSelectPrompt, onDelete }) {
     const [isAdding, setIsAdding] = useState(false);
     const [searchTerm, setSearchTerm] = useState('');
-    const [newPrompt, setNewPrompt] = useState({ title: '', body: '', themeId: themes[0]?.id || '' });
 
     const filteredPrompts = prompts.filter(p =>
         p.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -413,65 +413,11 @@ function PromptsView({ prompts, themes, onAddPrompt, onToggleFavorite, onSelectP
             </div>
 
             {isAdding && (
-                <div className="fixed inset-0 z-50 flex items-center justify-center bg-background/80 backdrop-blur-sm p-4">
-                    <motion.div
-                        initial={{ scale: 0.9, opacity: 0 }}
-                        animate={{ scale: 1, opacity: 1 }}
-                        className="glass w-full max-w-2xl rounded-[32px] p-8"
-                    >
-                        <h3 className="text-2xl font-bold mb-6">Criar Prompt</h3>
-                        <div className="space-y-4">
-                            <div className="grid grid-cols-2 gap-4">
-                                <div>
-                                    <label className="text-sm font-bold text-slate-400 mb-1 block">Título</label>
-                                    <input
-                                        autoFocus
-                                        className="w-full bg-slate-800/50 border border-white/10 rounded-xl px-4 py-3 outline-none focus:border-primary transition-all"
-                                        value={newPrompt.title}
-                                        onChange={e => setNewPrompt(prev => ({ ...prev, title: e.target.value }))}
-                                    />
-                                </div>
-                                <div>
-                                    <label className="text-sm font-bold text-slate-400 mb-1 block">Tema</label>
-                                    <select
-                                        className="w-full bg-slate-800/50 border border-white/10 rounded-xl px-4 py-3 outline-none focus:border-primary transition-all appearance-none"
-                                        value={newPrompt.themeId}
-                                        onChange={e => setNewPrompt(prev => ({ ...prev, themeId: e.target.value }))}
-                                    >
-                                        {themes.map(t => <option key={t.id} value={t.id}>{t.name}</option>)}
-                                    </select>
-                                </div>
-                            </div>
-                            <div>
-                                <label className="text-sm font-bold text-slate-400 mb-1 block">Corpo (use {'{variável}'})</label>
-                                <textarea
-                                    rows={6}
-                                    className="w-full bg-slate-800/50 border border-white/10 rounded-xl px-4 py-3 outline-none focus:border-primary transition-all font-mono text-sm"
-                                    value={newPrompt.body}
-                                    onChange={e => setNewPrompt(prev => ({ ...prev, body: e.target.value }))}
-                                />
-                            </div>
-                        </div>
-                        <div className="flex gap-3 mt-8">
-                            <button
-                                onClick={() => setIsAdding(false)}
-                                className="flex-1 px-4 py-3 rounded-xl font-bold hover:bg-slate-800 transition-all text-slate-400"
-                            >
-                                Cancelar
-                            </button>
-                            <button
-                                onClick={() => {
-                                    onAddPrompt({ ...newPrompt, id: Date.now().toString(), createdAt: Date.now(), isFavorite: false });
-                                    setIsAdding(false);
-                                }}
-                                disabled={!newPrompt.title || !newPrompt.body}
-                                className="flex-1 bg-primary text-white font-bold py-3 rounded-xl hover:bg-primary/90 disabled:opacity-50"
-                            >
-                                Criar
-                            </button>
-                        </div>
-                    </motion.div>
-                </div>
+                <AddPromptDialog
+                    themes={themes}
+                    onClose={() => setIsAdding(false)}
+                    onAdd={(p) => { onAddPrompt(p); setIsAdding(false); }}
+                />
             )}
         </motion.div>
     );
@@ -657,7 +603,9 @@ function HistoryView({ outputs, onDelete, onUpdateOutput }) {
     );
 }
 
-function ThemeDetailView({ theme, prompts, onBack, onSelectPrompt }) {
+function ThemeDetailView({ theme, prompts, onBack, onSelectPrompt, onAddPrompt }) {
+    const [isAdding, setIsAdding] = useState(false);
+
     return (
         <motion.div
             initial={{ opacity: 0 }}
@@ -669,20 +617,30 @@ function ThemeDetailView({ theme, prompts, onBack, onSelectPrompt }) {
                 <span className="font-bold">Todos os Temas</span>
             </button>
 
-            <div className="flex items-center gap-4 mb-2">
-                <div
-                    className="w-16 h-16 rounded-3xl flex items-center justify-center text-4xl shadow-inner border border-white/5"
-                    style={{ backgroundColor: theme?.color + '20', color: theme?.color }}
+            <div className="flex justify-between items-start mb-10">
+                <div className="flex items-center gap-4">
+                    <div
+                        className="w-16 h-16 rounded-3xl flex items-center justify-center text-4xl shadow-inner border border-white/5"
+                        style={{ backgroundColor: theme?.color + '20', color: theme?.color }}
+                    >
+                        {theme?.icon}
+                    </div>
+                    <div>
+                        <h2 className="text-4xl font-extrabold text-white">{theme?.name}</h2>
+                        <p className="text-slate-400">{prompts.length} prompts salvos</p>
+                    </div>
+                </div>
+
+                <button
+                    onClick={() => setIsAdding(true)}
+                    className="flex items-center gap-2 bg-primary/20 hover:bg-primary/30 text-primary border border-primary/20 px-5 py-3 rounded-2xl transition-all"
                 >
-                    {theme?.icon}
-                </div>
-                <div>
-                    <h2 className="text-4xl font-extrabold text-white">{theme?.name}</h2>
-                    <p className="text-slate-400">{prompts.length} prompts salvos</p>
-                </div>
+                    <Plus size={20} />
+                    <span className="font-bold whitespace-nowrap">Novo Prompt neste Tema</span>
+                </button>
             </div>
 
-            <div className="flex-1 overflow-y-auto pr-2 scroll-hide mt-10 space-y-4">
+            <div className="flex-1 overflow-y-auto pr-2 scroll-hide space-y-4">
                 {prompts.map(prompt => (
                     <div
                         key={prompt.id}
@@ -699,7 +657,80 @@ function ThemeDetailView({ theme, prompts, onBack, onSelectPrompt }) {
                     </div>
                 ))}
             </div>
+
+            {isAdding && (
+                <AddPromptDialog
+                    themes={[theme]}
+                    onClose={() => setIsAdding(false)}
+                    onAdd={(p) => { onAddPrompt(p); setIsAdding(false); }}
+                />
+            )}
         </motion.div>
+    );
+}
+
+function AddPromptDialog({ themes, onClose, onAdd }) {
+    const [newPrompt, setNewPrompt] = useState({ title: '', body: '', themeId: themes[0]?.id || '' });
+
+    return (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-background/80 backdrop-blur-sm p-4">
+            <motion.div
+                initial={{ scale: 0.9, opacity: 0 }}
+                animate={{ scale: 1, opacity: 1 }}
+                className="glass w-full max-w-2xl rounded-[32px] p-8"
+            >
+                <h3 className="text-2xl font-bold mb-6">Criar Prompt</h3>
+                <div className="space-y-4">
+                    <div className="grid grid-cols-2 gap-4">
+                        <div>
+                            <label className="text-sm font-bold text-slate-400 mb-1 block">Título</label>
+                            <input
+                                autoFocus
+                                className="w-full bg-slate-800/50 border border-white/10 rounded-xl px-4 py-3 outline-none focus:border-primary transition-all"
+                                value={newPrompt.title}
+                                onChange={e => setNewPrompt(prev => ({ ...prev, title: e.target.value }))}
+                            />
+                        </div>
+                        <div>
+                            <label className="text-sm font-bold text-slate-400 mb-1 block">Tema</label>
+                            <select
+                                className="w-full bg-slate-800/50 border border-white/10 rounded-xl px-4 py-3 outline-none focus:border-primary transition-all appearance-none"
+                                value={newPrompt.themeId}
+                                onChange={e => setNewPrompt(prev => ({ ...prev, themeId: e.target.value }))}
+                            >
+                                {themes.map(t => <option key={t.id} value={t.id}>{t.name}</option>)}
+                            </select>
+                        </div>
+                    </div>
+                    <div>
+                        <label className="text-sm font-bold text-slate-400 mb-1 block">Corpo (use {'{variável}'})</label>
+                        <textarea
+                            rows={6}
+                            className="w-full bg-slate-800/50 border border-white/10 rounded-xl px-4 py-3 outline-none focus:border-primary transition-all font-mono text-sm"
+                            value={newPrompt.body}
+                            onChange={e => setNewPrompt(prev => ({ ...prev, body: e.target.value }))}
+                        />
+                    </div>
+                </div>
+                <div className="flex gap-3 mt-8">
+                    <button
+                        onClick={onClose}
+                        className="flex-1 px-4 py-3 rounded-xl font-bold hover:bg-slate-800 transition-all text-slate-400"
+                    >
+                        Cancelar
+                    </button>
+                    <button
+                        onClick={() => {
+                            onAdd({ ...newPrompt, id: Date.now().toString(), createdAt: Date.now(), isFavorite: false });
+                        }}
+                        disabled={!newPrompt.title || !newPrompt.body}
+                        className="flex-1 bg-primary text-white font-bold py-3 rounded-xl hover:bg-primary/90 disabled:opacity-50"
+                    >
+                        Criar
+                    </button>
+                </div>
+            </motion.div>
+        </div>
     );
 }
 
