@@ -32,3 +32,8 @@ proguard/
 /captures
 .externalNativeBuild
 .cxx
+# Node & Web
+node_modules
+dist
+.vercel
+*.local

@@ -1,39 +1,37 @@
-# Prompter - Gestão de Prompts Offline
+# Prompter - Gestão de Prompts Premium
 
-![Android](https://img.shields.io/badge/Platform-Android-green.svg)
-![Kotlin](https://img.shields.io/badge/Language-Kotlin-purple.svg)
-![Jetpack Compose](https://img.shields.io/badge/UI-Jetpack%20Compose-blue.svg)
-![Offline First](https://img.shields.io/badge/Mode-Offline%20First-orange.svg)
+![React](https://img.shields.io/badge/Stack-React-blue.svg)
+![Vite](https://img.shields.io/badge/Tool-Vite-purple.svg)
+![TailwindCSS](https://img.shields.io/badge/CSS-TailwindCSS-blue.svg)
+![Framer Motion](https://img.shields.io/badge/Animation-Framer%20Motion-pink.svg)
 
 ## 📱 Sobre
 
-**Prompter** é uma aplicação Android nativa, 100% offline, focada em gestão simples de prompts com histórico reutilizável.
+**Prompter** é uma aplicação web moderna e minimalista, focada na gestão de prompts com variáveis dinâmicas e histórico reutilizável. Inspirado na simplicidade do GuiniFlash, o Prompter oferece uma experiência premium com dark mode nativo e animações fluidas.
 
 ### Objetivo
 
-Criar, organizar e reutilizar prompts de forma eficiente, mantendo um histórico cronológico de outputs para referência futura.
+Criar, organizar e reutilizar prompts de forma eficiente através de uma interface web rápida e intuitiva, mantendo os seus dados localmente no browser.
 
 ## ✨ Funcionalidades Core
 
-- ✅ **CRUD completo** de Temas, Prompts e Outputs
-- ✅ **Sistema de variáveis** dinâmico com `{nome_variavel}`
-- ✅ **Pesquisa global** por título, corpo e outputs
-- ✅ **Favoritos** para acesso rápido
-- ✅ **Histórico cronológico** de execuções
-- ✅ **App Lock** com PIN ou biometria
-- ✅ **Dark Mode** permanente
-- ✅ **100% Offline** - sem internet, sem APIs, sem cloud
+- ✅ **Modern Web UI**: Interface premium com Dark Mode e Framer Motion.
+- ✅ **Gestão de Temas**: Categorize os seus prompts com cores e ícones.
+- ✅ **Sistema de Variáveis**: Preencha templates dinamicamente usando `{variavel}`.
+- ✅ **Histórico Local**: Os seus prompts preenchidos são guardados localmente.
+- ✅ **Favoritos**: Acesso rápido aos prompts mais importantes.
+- ✅ **100% Client-Side**: Sem bases de dados externas ou APIs cloud.
 
 ## 🏗️ Arquitetura
 
 ### Stack Tecnológico
 
-- **Linguagem**: Kotlin
-- **UI**: Jetpack Compose (Material Design 3)
-- **Persistência**: SQLite via Room
-- **Navegação**: Navigation Compose
-- **Segurança**: DataStore + Biometric API
-- **Padrão**: MVVM + Repository Pattern
+- **React + Vite**: Performance e rapidez de desenvolvimento.
+- **TailwindCSS**: Estilização moderna com utilitários.
+- **Framer Motion**: Micro-interações e transições de página premium.
+- **Lucide React**: Conjunto de ícones consistente.
+- **Local Storage**: Persistência de dados simples e offline.
+
 
 ### Modelo de Dados
 
