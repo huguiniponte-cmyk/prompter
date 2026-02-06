@@ -13,7 +13,9 @@ import {
     ArrowLeft,
     LayoutGrid,
     ChevronRight,
-    AppWindow
+    AppWindow,
+    BrainCircuit,
+    Sparkles
 } from 'lucide-react';
 import { clsx } from 'clsx';
 import { twMerge } from 'tailwind-merge';
@@ -69,6 +71,13 @@ function App() {
         setData(prev => ({
             ...prev,
             prompts: prev.prompts.map(p => p.id === id ? { ...p, isFavorite: !p.isFavorite } : p)
+        }));
+    };
+
+    const updateOutput = (id, aiResponse) => {
+        setData(prev => ({
+            ...prev,
+            outputs: prev.outputs.map(out => out.id === id ? { ...out, aiResponse } : out)
         }));
     };
 
@@ -168,6 +177,7 @@ function App() {
                             key="history"
                             outputs={data.outputs}
                             onDelete={(id) => deleteItem('outputs', id)}
+                            onUpdateOutput={updateOutput}
                         />
                     )}
                     {activeTab === 'settings' && (
@@ -315,7 +325,13 @@ function ThemesView({ themes, onAddTheme, onSelectTheme, onDelete }) {
 
 function PromptsView({ prompts, themes, onAddPrompt, onToggleFavorite, onSelectPrompt, onDelete }) {
     const [isAdding, setIsAdding] = useState(false);
+    const [searchTerm, setSearchTerm] = useState('');
     const [newPrompt, setNewPrompt] = useState({ title: '', body: '', themeId: themes[0]?.id || '' });
+
+    const filteredPrompts = prompts.filter(p =>
+        p.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        p.body.toLowerCase().includes(searchTerm.toLowerCase())
+    );
 
     return (
         <motion.div
@@ -324,22 +340,34 @@ function PromptsView({ prompts, themes, onAddPrompt, onToggleFavorite, onSelectP
             exit={{ opacity: 0, x: -20 }}
             className="p-8 h-full flex flex-col"
         >
-            <header className="flex justify-between items-center mb-8">
+            <header className="flex justify-between items-start mb-8">
                 <div>
                     <h2 className="text-4xl font-extrabold text-white">Prompts</h2>
                     <p className="text-slate-400 mt-1">Todos os seus templates salvos</p>
                 </div>
-                <button
-                    onClick={() => setIsAdding(true)}
-                    className="flex items-center gap-2 bg-primary hover:bg-primary/90 text-white px-5 py-3 rounded-2xl transition-all shadow-lg shadow-primary/20"
-                >
-                    <Plus size={20} />
-                    <span className="font-bold">Novo Prompt</span>
-                </button>
+                <div className="flex items-center gap-4">
+                    <div className="relative group">
+                        <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-500 group-focus-within:text-primary transition-all" size={18} />
+                        <input
+                            type="text"
+                            placeholder="Pesquisar prompt..."
+                            value={searchTerm}
+                            onChange={(e) => setSearchTerm(e.target.value)}
+                            className="bg-slate-800/50 border border-white/5 rounded-2xl pl-12 pr-6 py-3 outline-none focus:border-primary/50 focus:bg-slate-800/80 transition-all w-64 text-sm font-medium"
+                        />
+                    </div>
+                    <button
+                        onClick={() => setIsAdding(true)}
+                        className="flex items-center gap-2 bg-primary hover:bg-primary/90 text-white px-5 py-3 rounded-2xl transition-all shadow-lg shadow-primary/20"
+                    >
+                        <Plus size={20} />
+                        <span className="font-bold whitespace-nowrap">Novo Prompt</span>
+                    </button>
+                </div>
             </header>
 
             <div className="flex-1 overflow-y-auto pr-2 scroll-hide space-y-4">
-                {prompts.map(prompt => {
+                {filteredPrompts.map(prompt => {
                     const theme = themes.find(t => t.id === prompt.themeId);
                     return (
                         <div
@@ -377,6 +405,11 @@ function PromptsView({ prompts, themes, onAddPrompt, onToggleFavorite, onSelectP
                         </div>
                     );
                 })}
+                {filteredPrompts.length === 0 && (
+                    <div className="py-20 text-center">
+                        <p className="text-slate-500 italic">Nenhum prompt encontrado.</p>
+                    </div>
+                )}
             </div>
 
             {isAdding && (
@@ -461,7 +494,7 @@ function UsePromptView({ prompt, onBack, onSaveOutput }) {
 
     const handleCopy = () => {
         navigator.clipboard.writeText(result);
-        onSaveOutput({ id: Date.now().toString(), outputText: result, createdAt: Date.now(), promptTitle: prompt.title });
+        onSaveOutput({ id: Date.now().toString(), outputText: result, createdAt: Date.now(), promptTitle: prompt.title, aiResponse: '' });
         // Show feedback
     };
 
@@ -523,41 +556,100 @@ function UsePromptView({ prompt, onBack, onSaveOutput }) {
     );
 }
 
-function HistoryView({ outputs, onDelete }) {
+function HistoryView({ outputs, onDelete, onUpdateOutput }) {
+    const [searchTerm, setSearchTerm] = useState('');
+
+    const filteredOutputs = outputs.filter(out =>
+        out.promptTitle.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        out.outputText.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        (out.aiResponse && out.aiResponse.toLowerCase().includes(searchTerm.toLowerCase()))
+    );
+
     return (
         <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             className="p-10 h-full flex flex-col"
         >
-            <h2 className="text-4xl font-extrabold text-white mb-2">Histórico</h2>
-            <p className="text-slate-400 mb-10">Últimos prompts copiados</p>
+            <header className="flex justify-between items-start mb-10">
+                <div>
+                    <h2 className="text-4xl font-extrabold text-white mb-2">Histórico</h2>
+                    <p className="text-slate-400">Pode guardar os resultados da IA em cada prompt usado</p>
+                </div>
+                <div className="relative group">
+                    <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-500 group-focus-within:text-primary transition-all" size={18} />
+                    <input
+                        type="text"
+                        placeholder="Pesquisar histórico..."
+                        value={searchTerm}
+                        onChange={(e) => setSearchTerm(e.target.value)}
+                        className="bg-slate-800/50 border border-white/5 rounded-2xl pl-12 pr-6 py-3 outline-none focus:border-primary/50 focus:bg-slate-800/80 transition-all w-72 text-sm font-medium"
+                    />
+                </div>
+            </header>
 
-            <div className="flex-1 overflow-y-auto pr-2 scroll-hide space-y-4">
-                {outputs.map(out => (
-                    <div key={out.id} className="p-6 rounded-[32px] bg-slate-800/30 border border-white/5 flex flex-col gap-3 group relative overflow-hidden">
-                        <div className="absolute top-0 right-0 p-4 opacity-0 group-hover:opacity-100 transition-all">
+            <div className="flex-1 overflow-y-auto pr-2 scroll-hide space-y-6">
+                {filteredOutputs.map(out => (
+                    <div key={out.id} className="p-8 rounded-[40px] bg-slate-800/30 border border-white/5 flex flex-col gap-6 group relative overflow-hidden hover:bg-slate-800/40 transition-all">
+                        <div className="absolute top-0 right-0 p-6 opacity-0 group-hover:opacity-100 transition-all">
                             <button onClick={() => onDelete(out.id)} className="text-slate-500 hover:text-red-400">
-                                <Trash2 size={18} />
+                                <Trash2 size={20} />
                             </button>
                         </div>
+
                         <div className="flex justify-between items-center pr-10">
-                            <span className="text-xs font-black text-primary uppercase tracking-[0.15em]">{out.promptTitle}</span>
-                            <span className="text-xs text-slate-500 font-medium">{new Date(out.createdAt).toLocaleString()}</span>
+                            <div>
+                                <span className="text-xs font-black text-primary uppercase tracking-[0.2em] mb-1 block">Prompt Original</span>
+                                <h3 className="text-xl font-bold text-white">{out.promptTitle}</h3>
+                            </div>
+                            <span className="text-xs text-slate-500 font-bold bg-slate-900/50 px-3 py-1.5 rounded-lg border border-white/5">
+                                {new Date(out.createdAt).toLocaleString()}
+                            </span>
                         </div>
-                        <p className="text-slate-300 text-sm line-clamp-3 leading-relaxed">{out.outputText}</p>
-                        <button
-                            onClick={() => navigator.clipboard.writeText(out.outputText)}
-                            className="text-xs font-bold text-slate-400 flex items-center gap-1 hover:text-blue-400 transition-all uppercase tracking-widest"
-                        >
-                            <Copy size={12} /> Copiar novamente
-                        </button>
+
+                        <div className="space-y-2">
+                            <div className="flex items-center gap-2 text-slate-500 text-xs font-black uppercase tracking-widest">
+                                <FileText size={14} /> Corpo Encedido
+                            </div>
+                            <p className="text-slate-400 text-sm italic leading-relaxed bg-slate-900/40 p-4 rounded-2xl border border-white/[0.03]">
+                                {out.outputText}
+                            </p>
+                            <button
+                                onClick={() => navigator.clipboard.writeText(out.outputText)}
+                                className="text-[10px] font-black text-slate-600 hover:text-primary transition-all flex items-center gap-1 mt-1 uppercase"
+                            >
+                                <Copy size={10} /> Copiar Novamente
+                            </button>
+                        </div>
+
+                        <div className="pt-4 border-t border-white/5 space-y-3">
+                            <div className="flex items-center gap-2 text-primary text-xs font-black uppercase tracking-widest">
+                                <BrainCircuit size={14} /> Resultado da IA (Dê input aqui)
+                            </div>
+                            <textarea
+                                placeholder="Cole aqui a resposta obtida da IA para ficar guardada..."
+                                value={out.aiResponse || ''}
+                                onChange={(e) => onUpdateOutput(out.id, e.target.value)}
+                                className="w-full bg-slate-900/60 border border-white/5 rounded-2xl p-4 text-sm text-slate-200 outline-none focus:border-primary/40 transition-all min-h-[120px] scroll-hide resize-none shadow-inner"
+                            />
+                            {out.aiResponse && (
+                                <button
+                                    onClick={() => navigator.clipboard.writeText(out.aiResponse)}
+                                    className="text-[10px] font-black text-primary/60 hover:text-primary transition-all flex items-center gap-1 uppercase"
+                                >
+                                    <Copy size={10} /> Copiar Resultado da IA
+                                </button>
+                            )}
+                        </div>
                     </div>
                 ))}
 
-                {outputs.length === 0 && (
+                {filteredOutputs.length === 0 && (
                     <div className="py-20 text-center">
-                        <p className="text-slate-500">Ainda não há histórico disponível.</p>
+                        <div className="w-16 h-16 bg-slate-800/50 rounded-full flex items-center justify-center mx-auto mb-4">
+                            <Search size={24} className="text-slate-600" />
+                        </div>
+                        <p className="text-slate-500 font-bold">Nenhum resultado encontrado no histórico.</p>
                     </div>
                 )}
             </div>
