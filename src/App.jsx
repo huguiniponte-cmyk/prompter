@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
     Folder,
-    Description,
+    FileText,
     History as HistoryIcon,
     Settings,
     Plus,
@@ -115,7 +115,7 @@ function App() {
 
                 <nav className="flex flex-col gap-2 flex-1">
                     <SidebarItem id="themes" icon={LayoutGrid} label="Temas" />
-                    <SidebarItem id="prompts" icon={Description} label="Prompts" />
+                    <SidebarItem id="prompts" icon={FileText} label="Prompts" />
                     <SidebarItem id="history" icon={HistoryIcon} label="Histórico" />
                     <div className="mt-auto">
                         <SidebarItem id="settings" icon={Settings} label="Definições" />
